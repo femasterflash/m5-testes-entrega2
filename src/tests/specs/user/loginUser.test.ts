@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { prisma } from "../../../database/prisma";
-import { user } from "../../mocks/user.mocks";
 import { request } from "../../setupFiles";
 import { userDefaultExpects } from "../../utils/userDefaultExpects";
+import { userMock } from "../../mocks/user.mocks";
 
 const loginUserBeforeEach = async () => {
-   const registerUser = await prisma.user.create({ data: user });
+   const registerUser = await prisma.user.create({ data: userMock });
 
    return { registerUser };
 };
@@ -40,8 +40,8 @@ describe("login user", () => {
    });
 
    it("should be throw error when user not found", async () => {
-    const credentials = { email: "invalid@email.com", password: "wrongpassword" };
+      const credentials = { email: "invalid@email.com", password: "wrongpassword" };
 
-    await request.post("/users/login").send(credentials).expect(404);
- });
+      await request.post("/users/login").send(credentials).expect(404);
+   });
 });

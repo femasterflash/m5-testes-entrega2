@@ -1,8 +1,8 @@
 import { prisma } from "../../database/prisma"
-import { user } from "../mocks/user.mocks"
+import { userMock } from "../mocks/user.mocks"
 import jwt from "jsonwebtoken";
 
-export const generateAuthentication = async () => {
+export const generateAuthentication = async (user = userMock) => {
     const newUser = await prisma.user.create({
         data: user
     })
@@ -10,4 +10,10 @@ export const generateAuthentication = async () => {
     const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET as string);
 
     return { user: newUser, token };
+}
+
+export const generateInvalidToken = () => {
+    const token = jwt.sign({}, "INVALID_SECRET");
+
+    return token;
 }

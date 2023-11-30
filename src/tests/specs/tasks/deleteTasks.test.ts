@@ -2,14 +2,20 @@ import { describe, it } from "vitest";
 import { prisma } from "../../../database/prisma";
 import { task } from "../../mocks/tasks.mocks";
 import { request } from "../../setupFiles";
-import { generateAuthentication } from "../../utils/generateAuthentication";
+import {
+   generateAuthentication,
+   generateInvalidToken,
+} from "../../utils/generateAuthentication";
+import { secondUserMock } from "../../mocks/user.mocks";
 
 const deleteTaskBeforeEach = async () => {
-   const { user, token } = await generateAuthentication();
+   const { user: user1, token: token1 } = await generateAuthentication();
 
-   const deleteTask = await prisma.task.create({ data: { ...task, userId: user.id } });
+   const deleteTask = await prisma.task.create({ data: { ...task, userId: user1.id } });
 
-   return { token, deleteTask };
+   const { token: token2 } = await generateAuthentication(secondUserMock);
+
+   return { token: token1, secondToken: token2, deleteTask };
 };
 
 describe("delete task", () => {
@@ -31,5 +37,27 @@ describe("delete task", () => {
          .delete(`/tasks/${id}`)
          .set("Authorization", `Bearer ${token}`)
          .expect(404);
+   });
+
+   it("should throw error when try to delete a task from a different user", async () => {
+      const { secondToken, deleteTask } = await deleteTaskBeforeEach();
+
+      await request
+         .delete(`/tasks/${deleteTask?.id}`)
+         .set("Authorization", `Bearer ${secondToken}`)
+         .expect(401);
+   });
+
+   it("should throw error when there is no token", async () => {
+      await request.delete("/tasks/1").expect(401);
+   });
+
+   it("should throw error when the token is invalid", async () => {
+      const token = generateInvalidToken();
+
+      await request
+         .delete("/tasks/1")
+         .set("Authorization", `Bearer ${token}`)
+         .expect(401);
    });
 });

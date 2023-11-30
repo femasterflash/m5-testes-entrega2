@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { request } from "../../setupFiles";
 import { category, invalidDataCategory } from "../../mocks/category.mocks";
-import { generateAuthentication } from "../../utils/generateAuthentication";
+import {
+   generateAuthentication,
+   generateInvalidToken,
+} from "../../utils/generateAuthentication";
 
 describe("create category", async () => {
    it("should be able to create category successfully", async () => {
@@ -38,7 +41,24 @@ describe("create category", async () => {
 
    it("should throw error when try to create a task with invalid data types", async () => {
       const { token } = await generateAuthentication();
-      
-      await request.post("/categories").set("Authorization", `Bearer ${token}`).send(invalidDataCategory).expect(409);
+
+      await request
+         .post("/categories")
+         .set("Authorization", `Bearer ${token}`)
+         .send(invalidDataCategory)
+         .expect(409);
+   });
+
+   it("should throw error when there is no token", async () => {
+      await request.post("/categories").expect(401);
+   });
+
+   it("should throw error when the token is invalid", async () => {
+      const token = generateInvalidToken();
+
+      await request
+         .post("/categories")
+         .set("Authorization", `Bearer ${token}`)
+         .expect(401);
    });
 });

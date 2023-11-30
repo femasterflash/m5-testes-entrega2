@@ -4,16 +4,22 @@ import { getTaskList, invalidDataUpdateTask, updateTask } from "../../mocks/task
 import { prisma } from "../../../database/prisma";
 import { category } from "../../mocks/category.mocks";
 import { taskDefaultExpects } from "../../utils/taskDefaultExpects";
-import { generateAuthentication } from "../../utils/generateAuthentication";
+import {
+   generateAuthentication,
+   generateInvalidToken,
+} from "../../utils/generateAuthentication";
+import { secondUserMock } from "../../mocks/user.mocks";
 
 const updateTaskBeforeEach = async () => {
-   const { user, token } = await generateAuthentication();
+   const { user: user1, token: token1 } = await generateAuthentication();
 
-   await prisma.category.create({ data: category(user.id) });
-   const taskList = await getTaskList(user.id);
+   await prisma.category.create({ data: category(user1.id) });
+   const taskList = await getTaskList(user1.id);
    await prisma.task.createMany({ data: taskList });
 
-   return { user, token };
+   const { token: token2 } = await generateAuthentication(secondUserMock);
+
+   return { user: user1, token: token1, secondToken: token2 };
 };
 
 describe("update task", () => {
@@ -60,5 +66,27 @@ describe("update task", () => {
          .set("Authorization", `Bearer ${token}`)
          .send(invalidDataUpdateTask)
          .expect(409);
+   });
+
+   it("should throw error when try update a task from a different user", async () => {
+      const { secondToken } = await updateTaskBeforeEach();
+
+      const task = await prisma.task.findFirst();
+
+      await request
+         .patch(`/tasks/${task?.id}`)
+         .set("Authorization", `Bearer ${secondToken}`)
+         .send(updateTask)
+         .expect(401);
+   });
+
+   it("should throw error when there is no token", async () => {
+      await request.patch("/tasks/1").expect(401);
+   });
+
+   it("should throw error when the token is invalid", async () => {
+      const token = generateInvalidToken();
+
+      await request.patch("/tasks/1").set("Authorization", `Bearer ${token}`).expect(401);
    });
 });
