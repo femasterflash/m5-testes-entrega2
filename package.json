@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Está documentação servirá de base para entrega, todas as rotas deverão se comportar assim como está previsto na documentação abaixo:",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "dev": "dotenv -e .env.develop -- tsnd --respawn src/server.ts",
     "migrate:dev": "dotenv -e .env.develop -- npx prisma migrate dev",
