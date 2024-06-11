@@ -4,10 +4,10 @@
   "description": "Está documentação servirá de base para entrega, todas as rotas deverão se comportar assim como está previsto na documentação abaixo:",
   "main": "index.js",
   "scripts": {
-    "dev": "dotenv -e .env.develop -- tsnd --respawn src/server.ts",
-    "migrate:dev": "dotenv -e .env.develop -- npx prisma migrate dev",
-    "test": "dotenv -e .env.test -- vitest",
-    "migrate:test": "dotenv -e .env.test -- npx prisma migrate dev"
+    "dev": "dotenv -e ./.env.develop -- tsnd --respawn src/server.ts",
+    "migrate:dev": "dotenv -e ./.env.develop -- npx prisma migrate dev",
+    "test": "dotenv -e ./.env.test -- vitest",
+    "migrate:test": "dotenv -e ./.env.test -- npx prisma migrate dev"
   },
   "keywords": [],
   "author": "",
